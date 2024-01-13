@@ -1,0 +1,6 @@
+@TestDotnetReact.Server_HostAddress = http://localhost:5236
+
+GET {{TestDotnetReact.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
