@@ -52,7 +52,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
+            '^/tenant': {
                 target,
                 secure: false
             }
