@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using TestDotnetReact.Server.Model;
 
 namespace TestDotnetReact.Server.Api;
 
-public sealed record CreatePlantRequest
+public sealed record CreatePlantRequest : IValidatable
 {
     public string Name { get; set; }
 }
@@ -17,16 +18,15 @@ public sealed record PlantDto
 
 public static class PlantApi
 {
-    public static WebApplication MapPlantApi(this WebApplication app)
+    public static RouteGroupBuilder MapPlantApi(this RouteGroupBuilder parent)
     {
-        var group = app.MapGroup("/plant");
+        var group = parent.MapGroup("/plant");
 
         group.MapGet("/{portfolioId:guid}", GetPlantAsync);
         group.MapPost("/{portfolioId:guid}", CreatePlantAsync);
         group.MapDelete("/{portfolioId:guid}/{id:guid}", DeletePlantAsync);
-        group.WithOpenApi();
 
-        return app;
+        return parent;
     }
 
     private static async Task<List<PlantDto>> GetPlantAsync(DatabaseContext ctx, Guid portfolioId, int page = 0, int pageSize = 20) =>
@@ -74,4 +74,12 @@ public static class PlantApi
             PortfolioId = entity.PortfolioId,
             Name = entity.Name
         };
+}
+
+public sealed class CreatePlantRequestValidator : AbstractValidator<CreatePlantRequest>
+{
+    public CreatePlantRequestValidator()
+    {
+        RuleFor(r => r.Name).NotEmpty().MaximumLength(Plant.NameMaxLength);
+    }
 }

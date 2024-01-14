@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using TestDotnetReact.Server.Model;
 
 namespace TestDotnetReact.Server.Api;
 
-public sealed record CreateOrUpdateTenantRequest
+public sealed record CreateOrUpdateTenantRequest : IValidatable
 {
     public string Name { get; set; }
     public string Country { get; set; }
@@ -19,17 +20,16 @@ public sealed record TenantDto
 
 public static class TenantApi
 {
-    public static WebApplication MapTenantApi(this WebApplication app)
+    public static RouteGroupBuilder MapTenantApi(this RouteGroupBuilder parent)
     {
-        var group = app.MapGroup("/tenant");
+        var group = parent.MapGroup("/tenant");
 
         group.MapGet("/", GetTenantsAsync);
         group.MapPost("/", CreateTenantAsync);
         group.MapPut("/{id:guid}", UpdateTenantAsync);
         group.MapDelete("/{id:guid}", DeleteTenantAsync);
-        group.WithOpenApi();
 
-        return app;
+        return parent;
     }
 
     private static async Task<List<TenantDto>> GetTenantsAsync(DatabaseContext ctx, int page = 0, int pageSize = 20) =>
@@ -91,4 +91,20 @@ public static class TenantApi
             Name = entity.Name,
             Country = entity.Country
         };
+}
+
+public sealed class CreateOrUpdateTenantRequestValidator : AbstractValidator<CreateOrUpdateTenantRequest>
+{
+    public CreateOrUpdateTenantRequestValidator(DatabaseContext database)
+    {
+        RuleFor(r => r.Name).NotEmpty().MaximumLength(Tenant.NameMaxLength);
+        RuleFor(r => r.Country).NotEmpty().MaximumLength(Tenant.CountryMaxLength);
+        RuleFor(r => r).CustomAsync(async (request, ctx, cancellationToken) =>
+        {
+            var exists = await database.Tenants.AnyAsync(t => t.Name == request.Name && t.Country == request.Country, cancellationToken);
+
+            if (exists)
+                ctx.AddFailure(string.Empty, "Name and Country must be unique.");
+        });
+    }
 }

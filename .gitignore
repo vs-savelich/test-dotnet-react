@@ -27,4 +27,4 @@ dist-ssr
 bin/
 obj/
 
-*.db
+*.db*

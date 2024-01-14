@@ -2,8 +2,10 @@
 
 public class Tenant
 {
+    public const int NameMaxLength = 200;
+    public const int CountryMaxLength = 200;
+
     public Guid Id { get; set; }
-    // TODO: name + country must be unique
     public string Name { get; set; }
     public string Country { get; set; }
 

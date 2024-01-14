@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using TestDotnetReact.Server.Model;
 
 namespace TestDotnetReact.Server.Api;
 
-public sealed record CreatePortfolioRequest
+public sealed record CreatePortfolioRequest : IValidatable
 {
     public string Name { get; set; }
 }
@@ -17,16 +18,15 @@ public sealed record PortfolioDto
 
 public static class PortfolioApi
 {
-    public static WebApplication MapPortfolioApi(this WebApplication app)
+    public static RouteGroupBuilder MapPortfolioApi(this RouteGroupBuilder parent)
     {
-        var group = app.MapGroup("/portfolio");
+        var group = parent.MapGroup("/portfolio");
 
         group.MapGet("/{tenantId:guid}", GetPortfoliosAsync);
         group.MapPost("/{tenantId:guid}", CreatePortfolioAsync);
-        group.MapDelete("/{tenantId:guid}/{id:guid}", DeletePortfolioAsync);
-        group.WithOpenApi();
+        group.MapDelete("/{tenantId:guid}/{id:guid}", DeletePortfolioAsync);        
 
-        return app;
+        return parent;
     }
 
     private static async Task<List<PortfolioDto>> GetPortfoliosAsync(DatabaseContext ctx, Guid tenantId, int page = 0, int pageSize = 20) =>
@@ -74,4 +74,12 @@ public static class PortfolioApi
             TenantId = entity.TenantId,
             Name = entity.Name
         };
+}
+
+public sealed class CreatePortfolioRequestValidator : AbstractValidator<CreatePortfolioRequest>
+{
+    public CreatePortfolioRequestValidator()
+    {
+        RuleFor(r => r.Name).NotEmpty().MaximumLength(Portfolio.NameMaxLength);
+    }
 }

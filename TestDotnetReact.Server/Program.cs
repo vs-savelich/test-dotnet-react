@@ -1,5 +1,7 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using TestDotnetReact.Server.Api;
+using TestDotnetReact.Server.Filters;
 using TestDotnetReact.Server.Model;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlite());
 
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 
@@ -52,9 +55,12 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
-app.MapTenantApi()
+app.MapGroup(string.Empty)
+    .AddEndpointFilter<RequestValidationFilter>()
+    .MapTenantApi()
     .MapPortfolioApi()
-    .MapPlantApi();
+    .MapPlantApi()
+    .WithOpenApi();
 
 app.MapFallbackToFile("/index.html");
 

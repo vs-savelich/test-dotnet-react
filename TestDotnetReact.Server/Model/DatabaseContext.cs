@@ -19,4 +19,35 @@ public class DatabaseContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder options) =>
         options.UseSqlite($"Data Source={DbPath}");
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Tenant>()
+            .HasIndex("Name", "Country")
+            .IsUnique();
+        modelBuilder.Entity<Tenant>()
+            .Property(t => t.Name)
+            .HasMaxLength(Tenant.NameMaxLength)
+            .IsRequired();
+        modelBuilder.Entity<Tenant>()
+            .Property(t => t.Country)
+            .HasMaxLength(Tenant.CountryMaxLength)
+            .IsRequired();
+
+        modelBuilder.Entity<Portfolio>()
+            .HasIndex("Name", "TenantId")
+            .IsUnique();
+        modelBuilder.Entity<Portfolio>()
+            .Property(t => t.Name)
+            .HasMaxLength(Portfolio.NameMaxLength)
+            .IsRequired();
+
+        modelBuilder.Entity<Plant>()
+            .HasIndex("Name", "PortfolioId")
+            .IsUnique();
+        modelBuilder.Entity<Plant>()
+            .Property(t => t.Name)
+            .HasMaxLength(Plant.NameMaxLength)
+            .IsRequired();
+    }
 }
