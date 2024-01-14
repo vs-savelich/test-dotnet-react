@@ -12,7 +12,7 @@ export async function getTenants() {
     let tenants = await localforage.getItem<Tenant[]>(itemName);
     if (!tenants) {
         const response = await fetch("tenant");
-        tenants = await response.json();
+        tenants = response.ok ? await response.json() : [];
     }
     return tenants ?? [];
 }

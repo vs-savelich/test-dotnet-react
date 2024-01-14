@@ -1,18 +1,12 @@
-// import { useEffect, useState } from 'react';
 import { Form, Link, useLoaderData } from "react-router-dom";
 import { getTenants } from "../tenants";
 import './App.css';
 import { Tenant } from "./Tenant";
 
 function App() {
-    // const [tenants, setTenants] = useState<Tenant[]>();
     const { tenants } = useLoaderData() as { tenants: Tenant[] };
 
-    // useEffect(() => {
-    //     populateTenantsData();
-    // }, []);
-
-    const contents = tenants === undefined
+    const contents = tenants.length === 0
         ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
         : <table className="table table-striped" aria-labelledby="tabelLabel">
             <thead>
@@ -70,12 +64,6 @@ function App() {
             </Form>
         </div>
     );
-
-    // async function populateTenantsData() {
-    //     const response = await fetch("tenant");
-    //     const data = await response.json();
-    //     setTenants(data);
-    // }
 }
 
 export default App;
