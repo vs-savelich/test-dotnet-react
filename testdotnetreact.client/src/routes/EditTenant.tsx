@@ -1,13 +1,7 @@
-import { Form, Params, useLoaderData } from "react-router-dom";
-import { getTenant } from "../tenants";
+import { Form, Params, redirect, useLoaderData } from "react-router-dom";
+import { Tenant, TenantData, getTenant, updateTenant } from "../tenants";
 
-export type Tenant = {
-    id: string;
-    name: string;
-    country: string;
-}
-
-export default function Tenant() {
+export default function EditTenant() {
   const { tenant } = useLoaderData() as { tenant: Tenant };
 
   return (
@@ -44,3 +38,9 @@ export async function loader({ params }: {params: Params<string>}) {
     const tenant = await getTenant(params.tenantId!)
     return { tenant };
 }
+
+export async function action({ params, request }: {params: Params<string>, request: Request}) {
+    const formData = await request.formData();
+    await updateTenant(params.tenantId!, Object.fromEntries(formData) as TenantData);
+    return redirect("/");
+  }

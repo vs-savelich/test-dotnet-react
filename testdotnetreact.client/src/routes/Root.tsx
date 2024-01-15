@@ -1,9 +1,8 @@
-import { Form, Link, useLoaderData } from "react-router-dom";
-import { getTenants } from "../tenants";
-import './App.css';
-import { Tenant } from "./Tenant";
+import { Form, Link, Outlet, useLoaderData } from "react-router-dom";
+import { Tenant, deleteTenant, getTenants } from "../tenants.ts";
+import './Root.css';
 
-function App() {
+function Root() {
     const { tenants } = useLoaderData() as { tenants: Tenant[] };
 
     const contents = tenants.length === 0
@@ -22,10 +21,8 @@ function App() {
                         <td>{tenant.country}</td>
                         <td><Link to={`tenants/${tenant.id}`}>Edit</Link></td>
                         <td>
-                            <Form
-                                method="delete"
-                                action={`tenant/${tenant.id}`}
-                            >
+                            <Form method="delete">
+                                <input name="id" defaultValue={tenant.id} hidden />
                                 <button type="submit">Delete</button>
                             </Form>
                         </td>
@@ -38,37 +35,20 @@ function App() {
         <div>
             <h1 id="tabelLabel">Tenants</h1>
             {contents}
-            <Form
-                method="post"
-                action="tenant"
-            >
-                <label>
-                    <span>Name</span>
-                    <input
-                    placeholder="Name"
-                    aria-label="Name"
-                    type="text"
-                    name="name"
-                    />
-                </label>
-                <label>
-                    <span>Country</span>
-                    <input
-                    placeholder="Country"
-                    aria-label="Country"
-                    type="text"
-                    name="country"
-                    />
-                </label>
-                <button type="submit">Add</button>
-            </Form>
+            <Outlet />
         </div>
     );
 }
 
-export default App;
+export default Root;
 
 export async function loader() {
     const tenants: Tenant[] = await getTenants();
     return { tenants };
 }
+
+export async function action({ request }: {request: Request}) {
+    const formData = await request.formData();
+    const tenant = await deleteTenant(formData.get("id") as string);
+    return { tenant };
+  }
